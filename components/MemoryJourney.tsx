@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useCallback } from "react";
+import { motion } from "framer-motion";
 import FloralDecoration from "./FloralDecoration";
 import Image from "next/image";
 import { memories, type Memory } from "@/lib/memories";
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
 function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
-  const rootRef = useRef<HTMLDivElement>(null);
+  const pos = memory.objectPosition ?? "center";
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = e.currentTarget;
@@ -29,76 +24,32 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
     setTimeout(() => { if (el) el.style.transition = ""; }, 600);
   }, []);
 
-  useEffect(() => {
-    const el = rootRef.current;
-    if (!el) return;
-
-    const ctx = gsap.context(() => {
-      const images = el.querySelectorAll<HTMLElement>("[data-reveal-img]");
-      const texts = el.querySelectorAll<HTMLElement>("[data-reveal-text]");
-
-      images.forEach((img, i) => {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: el,
-            start: "top 80%",
-            toggleActions: "play none none reverse",
-          },
-        });
-
-        tl.fromTo(
-          img,
-          { opacity: 0, y: 40, scale: 0.95 },
-          { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power3.out", delay: i * 0.15 }
-        );
-      });
-
-      texts.forEach((t, i) => {
-        gsap.fromTo(
-          t,
-          { opacity: 0, y: 24 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.9,
-            ease: "power2.out",
-            delay: 0.3 + i * 0.1,
-            scrollTrigger: {
-              trigger: el,
-              start: "top 78%",
-              toggleActions: "play none none reverse",
-            },
-          }
-        );
-      });
-
-      const imgWrap = el.querySelector<HTMLElement>("[data-parallax]");
-      if (imgWrap) {
-        gsap.fromTo(
-          imgWrap,
-          { y: -20 },
-          {
-            y: 20,
-            ease: "none",
-            scrollTrigger: {
-              trigger: el,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 1,
-            },
-          }
-        );
-      }
-    }, rootRef);
-
-    return () => ctx.revert();
-  }, [index]);
-
   const eyebrow = memory.date ?? `Memory ${String(memory.id).padStart(2, "0")}`;
-  const pos = memory.objectPosition ?? "center";
+
+  const reveal = {
+    hidden: { opacity: 0, y: 40, scale: 0.96 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { duration: 0.9, delay: i * 0.12, ease: [0.215, 0.61, 0.355, 1] },
+    }),
+  };
+
+  const textReveal = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.7, ease: "easeOut" },
+    },
+  };
 
   const TextBlock = (
-    <div data-reveal-text className="flex flex-col justify-center px-2 sm:px-6">
+    <motion.div
+      variants={textReveal}
+      className="flex flex-col justify-center px-2 sm:px-6"
+    >
       <span className="font-body text-xs uppercase tracking-[0.25em] text-accent/70">
         {eyebrow}
       </span>
@@ -108,16 +59,20 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
       <p className="mt-4 max-w-md font-quote text-xl italic leading-relaxed text-ink-soft">
         &ldquo;{memory.caption}&rdquo;
       </p>
-    </div>
+    </motion.div>
   );
 
   if (memory.layout === "video") {
     return (
-      <div
-        ref={rootRef}
-        className="section-padding relative mx-auto w-full max-w-5xl px-6"
-      >
-        <div data-parallax data-reveal-img className="relative">
+      <div className="section-padding relative mx-auto w-full max-w-5xl px-6">
+        <motion.div
+          custom={0}
+          variants={reveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-10%" }}
+          className="relative"
+        >
           <div className="relative aspect-video w-full overflow-hidden rounded-sm bg-ink/90">
             <video
               className="h-full w-full object-cover opacity-90"
@@ -135,20 +90,32 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
               </p>
             </div>
           </div>
-        </div>
-        <div className="mt-6 text-center">{TextBlock}</div>
+        </motion.div>
+        <motion.div
+          variants={textReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-10%" }}
+          className="mt-6 text-center"
+        >
+          {TextBlock}
+        </motion.div>
       </div>
     );
   }
 
   if (memory.layout === "duo") {
     return (
-      <div ref={rootRef} className="section-padding mx-auto w-full max-w-5xl px-6">
-        <div className="grid grid-cols-2 gap-3 sm:gap-6" data-parallax>
-          <div
+      <div  className="section-padding mx-auto w-full max-w-5xl px-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6">
+          <motion.div
+            custom={0}
+            variants={reveal}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-10%" }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            data-reveal-img
             className="relative aspect-[3/4] overflow-hidden rounded-sm transition-transform duration-300"
           >
             <Image
@@ -159,8 +126,15 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
               style={{ objectPosition: pos }}
               sizes="(max-width: 768px) 50vw, 25vw"
             />
-          </div>
-          <div data-reveal-img className="relative aspect-[3/4] overflow-hidden rounded-sm">
+          </motion.div>
+          <motion.div
+            custom={1}
+            variants={reveal}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-10%" }}
+            className="relative aspect-[3/4] overflow-hidden rounded-sm"
+          >
             <Image
               src={memory.secondPhoto ?? memory.photo}
               alt={memory.secondPlaceholder ?? memory.placeholder}
@@ -169,17 +143,32 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
               style={{ objectPosition: "center" }}
               sizes="(max-width: 768px) 50vw, 25vw"
             />
-          </div>
+          </motion.div>
         </div>
-        <div className="mt-6 text-center">{TextBlock}</div>
+        <motion.div
+          variants={textReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-10%" }}
+          className="mt-6 text-center"
+        >
+          {TextBlock}
+        </motion.div>
       </div>
     );
   }
 
   if (memory.layout === "full") {
     return (
-      <div ref={rootRef} className="relative w-full">
-        <div data-parallax data-reveal-img className="relative h-[70vh] overflow-hidden sm:h-[85vh]">
+      <div  className="relative w-full">
+        <motion.div
+          custom={0}
+          variants={reveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-5%" }}
+          className="relative h-[70vh] overflow-hidden sm:h-[85vh]"
+        >
           <div
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
@@ -194,9 +183,12 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
               sizes="100vw"
             />
           </div>
-        </div>
-        <div
-          data-reveal-text
+        </motion.div>
+        <motion.div
+          variants={textReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-10%" }}
           className="mx-auto -mt-16 max-w-2xl px-6 text-center sm:-mt-24"
         >
           <div className="mx-auto w-fit rounded-sm bg-cream/90 px-6 py-6 shadow-sm backdrop-blur-sm sm:px-10">
@@ -210,7 +202,7 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
               &ldquo;{memory.caption}&rdquo;
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -219,14 +211,17 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
     const isPortrait = memory.layout === "portrait";
     return (
       <div
-        ref={rootRef}
+        
         className="section-padding mx-auto w-full max-w-4xl px-6 text-center"
       >
-        <div
+        <motion.div
+          custom={0}
+          variants={reveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-10%" }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          data-parallax
-          data-reveal-img
           className={isPortrait ? "relative mx-auto max-w-sm aspect-[3/4] overflow-hidden rounded-sm transition-transform duration-300" : "relative mx-auto aspect-[4/3] overflow-hidden rounded-sm transition-transform duration-300"}
         >
           <Image
@@ -237,22 +232,33 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
             style={{ objectPosition: pos }}
             sizes="(max-width: 640px) 100vw, 384px"
           />
-        </div>
-        <div className="mt-8">{TextBlock}</div>
+        </motion.div>
+        <motion.div
+          variants={textReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-10%" }}
+          className="mt-8"
+        >
+          {TextBlock}
+        </motion.div>
       </div>
     );
   }
 
   const imageFirst = memory.layout === "left-image";
   return (
-    <div ref={rootRef} className="section-padding mx-auto w-full max-w-5xl px-6">
+    <div  className="section-padding mx-auto w-full max-w-5xl px-6">
       <div className="grid grid-cols-1 items-center gap-8 sm:grid-cols-2 sm:gap-12">
         {imageFirst && (
-          <div
+          <motion.div
+            custom={0}
+            variants={reveal}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-10%" }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            data-parallax
-            data-reveal-img
             className="relative aspect-[4/3] overflow-hidden rounded-sm transition-transform duration-300"
           >
             <Image
@@ -263,15 +269,25 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
               style={{ objectPosition: pos }}
               sizes="(max-width: 768px) 100vw, 50vw"
             />
-          </div>
+          </motion.div>
         )}
-        {TextBlock}
+        <motion.div
+          variants={textReveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-10%" }}
+        >
+          {TextBlock}
+        </motion.div>
         {!imageFirst && (
-          <div
+          <motion.div
+            custom={0}
+            variants={reveal}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-10%" }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            data-parallax
-            data-reveal-img
             className="relative aspect-[4/3] overflow-hidden rounded-sm transition-transform duration-300"
           >
             <Image
@@ -282,7 +298,7 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
               style={{ objectPosition: pos }}
               sizes="(max-width: 768px) 100vw, 50vw"
             />
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

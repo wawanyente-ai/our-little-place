@@ -195,7 +195,7 @@ export const memories: Memory[] = [
     caption:
       "Love was never only about big moments. Sometimes it was just taking care of each other in the smallest ways.",
     layout: "landscape",
-    objectPosition: "center 55%",
+    objectPosition: "center 75%",
   },
   {
     id: 5,
@@ -227,6 +227,7 @@ export const memories: Memory[] = [
     caption:
       "It was never about making something perfect. It was about creating something together.",
     layout: "left-image",
+    objectPosition: "center 65%",
   },
   {
     id: 8,
