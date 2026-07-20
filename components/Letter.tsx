@@ -17,6 +17,43 @@ const paragraphs = [
   "Because our story is still being written.",
 ];
 
+const wordReveal = {
+  hidden: { opacity: 0, y: 12, rotateX: -20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    rotateX: 0,
+    transition: {
+      duration: 0.4,
+      delay: i * 0.035,
+      ease: [0.215, 0.61, 0.355, 1],
+    },
+  }),
+};
+
+function AnimatedParagraph({ text, index }: { text: string; index: number }) {
+  const words = text.split(" ");
+  return (
+    <motion.p
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-15%" }}
+      className="font-quote text-xl italic leading-relaxed text-ink-soft sm:text-2xl"
+    >
+      {words.map((word, i) => (
+        <motion.span
+          key={i}
+          custom={i}
+          variants={wordReveal}
+          className="inline-block mr-[0.3em]"
+        >
+          {word}
+        </motion.span>
+      ))}
+    </motion.p>
+  );
+}
+
 export default function Letter() {
   return (
     <section
@@ -42,16 +79,7 @@ export default function Letter() {
 
         <div className="mt-14 flex flex-col gap-6">
           {paragraphs.map((p, i) => (
-            <motion.p
-              key={i}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-20%" }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-              className="font-quote text-xl italic leading-relaxed text-ink-soft sm:text-2xl"
-            >
-              {p}
-            </motion.p>
+            <AnimatedParagraph key={i} text={p} index={i} />
           ))}
         </div>
       </div>

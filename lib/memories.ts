@@ -17,6 +17,7 @@ export interface Memory {
   layout: MemoryLayout;
   secondPlaceholder?: string;
   secondPhoto?: string;
+  objectPosition?: string;
 }
 
 // export const memories: Memory[] = [
@@ -194,6 +195,7 @@ export const memories: Memory[] = [
     caption:
       "Love was never only about big moments. Sometimes it was just taking care of each other in the smallest ways.",
     layout: "landscape",
+    objectPosition: "center 55%",
   },
   {
     id: 5,

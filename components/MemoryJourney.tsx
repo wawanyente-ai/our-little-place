@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import FloralDecoration from "./FloralDecoration";
@@ -14,6 +14,21 @@ if (typeof window !== "undefined") {
 function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
   const rootRef = useRef<HTMLDivElement>(null);
 
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    el.style.transform = `perspective(600px) rotateY(${x * 3}deg) rotateX(${-y * 3}deg)`;
+  }, []);
+
+  const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    el.style.transform = "perspective(600px) rotateY(0deg) rotateX(0deg)";
+    el.style.transition = "transform 0.6s ease-out";
+    setTimeout(() => { if (el) el.style.transition = ""; }, 600);
+  }, []);
+
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
@@ -23,36 +38,31 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
       const texts = el.querySelectorAll<HTMLElement>("[data-reveal-text]");
 
       images.forEach((img, i) => {
-        gsap.fromTo(
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: el,
+            start: "top 80%",
+            toggleActions: "play none none reverse",
+          },
+        });
+
+        tl.fromTo(
           img,
-          { opacity: 0, scale: 1.08, filter: "blur(14px)", rotate: index % 2 === 0 ? -1 : 1 },
-          {
-            opacity: 1,
-            scale: 1,
-            filter: "blur(0px)",
-            rotate: 0,
-            duration: 1.3,
-            ease: "power3.out",
-            delay: i * 0.12,
-            scrollTrigger: {
-              trigger: el,
-              start: "top 78%",
-              toggleActions: "play none none reverse",
-            },
-          }
+          { opacity: 0, y: 40, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power3.out", delay: i * 0.15 }
         );
       });
 
       texts.forEach((t, i) => {
         gsap.fromTo(
           t,
-          { opacity: 0, y: 26 },
+          { opacity: 0, y: 24 },
           {
             opacity: 1,
             y: 0,
             duration: 0.9,
             ease: "power2.out",
-            delay: 0.25 + i * 0.1,
+            delay: 0.3 + i * 0.1,
             scrollTrigger: {
               trigger: el,
               start: "top 78%",
@@ -62,20 +72,19 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
         );
       });
 
-      // Gentle parallax drift on the image container while scrolling through
       const imgWrap = el.querySelector<HTMLElement>("[data-parallax]");
       if (imgWrap) {
         gsap.fromTo(
           imgWrap,
-          { y: -18 },
+          { y: -20 },
           {
-            y: 18,
+            y: 20,
             ease: "none",
             scrollTrigger: {
               trigger: el,
               start: "top bottom",
               end: "bottom top",
-              scrub: true,
+              scrub: 1,
             },
           }
         );
@@ -86,6 +95,7 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
   }, [index]);
 
   const eyebrow = memory.date ?? `Memory ${String(memory.id).padStart(2, "0")}`;
+  const pos = memory.objectPosition ?? "center";
 
   const TextBlock = (
     <div data-reveal-text className="flex flex-col justify-center px-2 sm:px-6">
@@ -135,12 +145,18 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
     return (
       <div ref={rootRef} className="section-padding mx-auto w-full max-w-5xl px-6">
         <div className="grid grid-cols-2 gap-3 sm:gap-6" data-parallax>
-          <div data-reveal-img className="relative aspect-[3/4] overflow-hidden rounded-sm">
+          <div
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            data-reveal-img
+            className="relative aspect-[3/4] overflow-hidden rounded-sm transition-transform duration-300"
+          >
             <Image
               src={memory.photo}
               alt={memory.placeholder}
               fill
-              className="object-cover object-center"
+              className="object-cover transition-transform duration-700 hover:scale-105"
+              style={{ objectPosition: pos }}
               sizes="(max-width: 768px) 50vw, 25vw"
             />
           </div>
@@ -149,7 +165,8 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
               src={memory.secondPhoto ?? memory.photo}
               alt={memory.secondPlaceholder ?? memory.placeholder}
               fill
-              className="object-cover object-center"
+              className="object-cover transition-transform duration-700 hover:scale-105"
+              style={{ objectPosition: "center" }}
               sizes="(max-width: 768px) 50vw, 25vw"
             />
           </div>
@@ -163,13 +180,20 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
     return (
       <div ref={rootRef} className="relative w-full">
         <div data-parallax data-reveal-img className="relative h-[70vh] overflow-hidden sm:h-[85vh]">
-          <Image
-            src={memory.photo}
-            alt={memory.placeholder}
-            fill
-            className="object-cover object-center"
-            sizes="100vw"
-          />
+          <div
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            className="absolute inset-0 transition-transform duration-300"
+          >
+            <Image
+              src={memory.photo}
+              alt={memory.placeholder}
+              fill
+              className="object-cover transition-transform duration-700 hover:scale-105"
+              style={{ objectPosition: pos }}
+              sizes="100vw"
+            />
+          </div>
         </div>
         <div
           data-reveal-text
@@ -199,15 +223,18 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
         className="section-padding mx-auto w-full max-w-4xl px-6 text-center"
       >
         <div
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
           data-parallax
           data-reveal-img
-          className={isPortrait ? "relative mx-auto max-w-sm aspect-[3/4] overflow-hidden rounded-sm" : "relative mx-auto aspect-[4/3] overflow-hidden rounded-sm"}
+          className={isPortrait ? "relative mx-auto max-w-sm aspect-[3/4] overflow-hidden rounded-sm transition-transform duration-300" : "relative mx-auto aspect-[4/3] overflow-hidden rounded-sm transition-transform duration-300"}
         >
           <Image
             src={memory.photo}
             alt={memory.placeholder}
             fill
-            className="object-cover object-center"
+            className="object-cover transition-transform duration-700 hover:scale-105"
+            style={{ objectPosition: pos }}
             sizes="(max-width: 640px) 100vw, 384px"
           />
         </div>
@@ -216,30 +243,43 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
     );
   }
 
-  // left-image / right-image split layouts
   const imageFirst = memory.layout === "left-image";
   return (
     <div ref={rootRef} className="section-padding mx-auto w-full max-w-5xl px-6">
       <div className="grid grid-cols-1 items-center gap-8 sm:grid-cols-2 sm:gap-12">
         {imageFirst && (
-          <div data-parallax data-reveal-img className="relative aspect-[4/3] overflow-hidden rounded-sm">
+          <div
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            data-parallax
+            data-reveal-img
+            className="relative aspect-[4/3] overflow-hidden rounded-sm transition-transform duration-300"
+          >
             <Image
               src={memory.photo}
               alt={memory.placeholder}
               fill
-              className="object-cover object-center"
+              className="object-cover transition-transform duration-700 hover:scale-105"
+              style={{ objectPosition: pos }}
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
         )}
         {TextBlock}
         {!imageFirst && (
-          <div data-parallax data-reveal-img className="relative aspect-[4/3] overflow-hidden rounded-sm">
+          <div
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            data-parallax
+            data-reveal-img
+            className="relative aspect-[4/3] overflow-hidden rounded-sm transition-transform duration-300"
+          >
             <Image
               src={memory.photo}
               alt={memory.placeholder}
               fill
-              className="object-cover object-center"
+              className="object-cover transition-transform duration-700 hover:scale-105"
+              style={{ objectPosition: pos }}
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
