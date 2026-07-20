@@ -10,7 +10,7 @@ export type MemoryLayout =
 export interface Memory {
   id: number;
   title: string;
-  photo?: string;
+  photo: string;
   placeholder: string;
   caption: string;
   date?: string;

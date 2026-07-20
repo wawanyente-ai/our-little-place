@@ -30,7 +30,7 @@ export default function Ending() {
         </p>
 
         <p className="mt-4">
-          I hope that from now on, it won't only be the pages of your thesis
+          I hope that from now on, it won&apos;t only be the pages of your thesis
           that continue to grow...
         </p>
 

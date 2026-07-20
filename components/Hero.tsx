@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export default function Hero() {
   return (
@@ -15,10 +16,13 @@ export default function Hero() {
         animate={{ scale: 1 }}
         transition={{ duration: 18, ease: "linear" }}
       >
-        <img
-          src="https://cdn.jsdelivr.net/gh/wawanyente-ai/project-memory-1-assets@main/assets/us-with-flowers.webp"
+        <Image
+          src="https://cdn.jsdelivr.net/gh/wawanyente-ai/project-memory-1-assets@main/assets/us-with-flowers-2.webp"
           alt="Best couple portrait, golden hour"
-          className="h-full w-full object-cover"
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
         />
       </motion.div>
 

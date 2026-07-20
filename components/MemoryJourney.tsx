@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import FloralDecoration from "./FloralDecoration";
+import Image from "next/image";
 import { memories, type Memory } from "@/lib/memories";
 
 if (typeof window !== "undefined") {
@@ -135,19 +136,21 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
       <div ref={rootRef} className="section-padding mx-auto w-full max-w-5xl px-6">
         <div className="grid grid-cols-2 gap-3 sm:gap-6" data-parallax>
           <div data-reveal-img className="relative aspect-[3/4] overflow-hidden rounded-sm">
-            <img
+            <Image
               src={memory.photo}
               alt={memory.placeholder}
-              loading="lazy"
-              className="h-full w-full object-cover object-center"
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 768px) 50vw, 25vw"
             />
           </div>
           <div data-reveal-img className="relative aspect-[3/4] overflow-hidden rounded-sm">
-            <img
+            <Image
               src={memory.secondPhoto ?? memory.photo}
               alt={memory.secondPlaceholder ?? memory.placeholder}
-              loading="lazy"
-              className="h-full w-full object-cover object-center"
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 768px) 50vw, 25vw"
             />
           </div>
         </div>
@@ -160,11 +163,12 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
     return (
       <div ref={rootRef} className="relative w-full">
         <div data-parallax data-reveal-img className="relative h-[70vh] overflow-hidden sm:h-[85vh]">
-          <img
+          <Image
             src={memory.photo}
             alt={memory.placeholder}
-            loading="lazy"
-            className="h-full w-full object-cover object-center"
+            fill
+            className="object-cover object-center"
+            sizes="100vw"
           />
         </div>
         <div
@@ -197,13 +201,14 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
         <div
           data-parallax
           data-reveal-img
-          className={isPortrait ? "mx-auto max-w-sm" : "mx-auto"}
+          className={isPortrait ? "relative mx-auto max-w-sm aspect-[3/4] overflow-hidden rounded-sm" : "relative mx-auto aspect-[4/3] overflow-hidden rounded-sm"}
         >
-          <img
+          <Image
             src={memory.photo}
             alt={memory.placeholder}
-            loading="lazy"
-            className="w-full rounded-sm object-cover"
+            fill
+            className="object-cover object-center"
+            sizes="(max-width: 640px) 100vw, 384px"
           />
         </div>
         <div className="mt-8">{TextBlock}</div>
@@ -218,22 +223,24 @@ function MemoryItem({ memory, index }: { memory: Memory; index: number }) {
       <div className="grid grid-cols-1 items-center gap-8 sm:grid-cols-2 sm:gap-12">
         {imageFirst && (
           <div data-parallax data-reveal-img className="relative aspect-[4/3] overflow-hidden rounded-sm">
-            <img
+            <Image
               src={memory.photo}
               alt={memory.placeholder}
-              loading="lazy"
-              className="h-full w-full object-cover object-center"
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
         )}
         {TextBlock}
         {!imageFirst && (
           <div data-parallax data-reveal-img className="relative aspect-[4/3] overflow-hidden rounded-sm">
-            <img
+            <Image
               src={memory.photo}
               alt={memory.placeholder}
-              loading="lazy"
-              className="h-full w-full object-cover object-center"
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
         )}
