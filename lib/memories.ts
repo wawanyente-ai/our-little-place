@@ -307,6 +307,7 @@ export const memories: Memory[] = [
     placeholder: "Inside car moment, holding hands, traveling together",
     caption: "Every journey feels better when I know you're beside me.",
     layout: "landscape",
+    objectPosition: "center 70%",
   },
   {
     id: 16,
