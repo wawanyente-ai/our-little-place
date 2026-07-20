@@ -28,6 +28,9 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   title: "Our Little Place",
   description: "A place where our memories quietly live.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export const viewport: Viewport = {

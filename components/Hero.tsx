@@ -17,7 +17,7 @@ export default function Hero() {
         transition={{ duration: 18, ease: "linear" }}
       >
         <Image
-          src="https://cdn.jsdelivr.net/gh/wawanyente-ai/project-memory-1-assets@main/assets/us-with-flowers-2.webp"
+          src="https://cdn.jsdelivr.net/gh/wawanyente-ai/project-memory-1-assets@main/assets/us-with-flowers.webp"
           alt="Best couple portrait, golden hour"
           fill
           className="object-cover"
